@@ -127,6 +127,7 @@ mysteriously on paths, suspect this first.
 Each entry: **What / How (exact commands) / Why / Result**.
 Errors get their own entry with the fix — errors are part of the record, not embarrassments.
 
+
 ### Phase 0 — Developer Foundations
 
 #### Step 0.1 — Environment verification
@@ -257,6 +258,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   are designed in at load time, impossible to bolt on later.
 - **Observation:** extraction is imperfect (headers, formulas, tables) → retrieval quality
   is capped by extraction quality. Improvement scheduled for Phase 8.
+
+
+- **Incident:** `git status` before commit caught `data/attention.pdf` staged despite the
+  `data/` ignore rule. Cause: `.gitignore` only filters *untracked* files — it does not
+  unstage anything already added. Fix: `git restore --staged data/attention.pdf`.
+  Lesson: gitignore is a gate for new files, not a cleaner; `git status` is the last line
+  of defense before history.
+- **Incident 2:** `data/` kept appearing as untracked. Cause: ignore rule was written as
+  `.data/` (leading dot) — matches a folder named `.data`, not `data`. Fix: rule changed
+  to `data/`. Debugging tool learned: `git check-ignore -v <path>` shows exactly which
+  rule (file + line) matches a path, or nothing if no rule does.
 
 ## 6. Changelog
 
