@@ -290,7 +290,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   chunks) → validated ~1000 as the sweet spot empirically.
 - **Also here:** infinite-loop incident + fix (see Incident 3), and the code walkthrough
   of the chunker.
-  
+
 #### Step 1.7 — Refactor: one module per stage
 - **What:** split rag_by_hand.py into loader.py / chunker.py / embedder.py / search.py /
   main.py (pipeline conductor).
@@ -303,6 +303,38 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - (unchanged from plan: MiniLM 384-dim vectors, cosine = normalized dot product,
   scores ~0.5–0.8 = good hit, unrelated query → collapsed scores)
 
+- **Incident 4 (model download failure):** OSError loading 'all-MiniLm-L6-v2' + 401 from
+  HF storage. Cause: typo in model name — lowercase 'm', correct is 'all-MiniLM-L6-v2'.
+  Fix: corrected name, purged partial cache under ~/.cache/huggingface/hub, redownloaded.
+  Lessons: (1) bottom line of traceback contained the misspelled name verbatim;
+  (2) partially-downloaded model caches must be deleted before retry;
+  (3) fallback for HF xet 401s: HF_HUB_DISABLE_XET=1.
+- **Observation:** chunk stats min=2 → confirmed tiny page-tail chunks; min_chunk_size
+  filter scheduled for the Phase 2 Chunker class. Removed leftover debug prints from chunker.
+
+
+  - **Incident 4, part 2:** After fixing the name, download still failed with 401 from
+  cas-server.xethub.hf.co — a separate issue: HF's Xet download backend flakiness, not
+  our code. Distinguishing evidence: model name now correct in the error; only the large
+  weights file fails. Fix: `pip uninstall hf_xet` (falls back to plain HTTPS), purge
+  partial cache, retry. Lesson: identical-looking errors can have different causes —
+  read the details, not just the error type.
+
+  #### Step 1.8 — Embeddings + search: first real results
+- **Setup:** 55 chunks → (55, 384) matrix, MiniLM local. HF Xet backend 401 resolved by
+  falling back to plain HTTP download (hf_xet not installed).
+- **Results analysis:**
+  - "attention heads" → 0.55, correct chunk (multi-head section). Hit.
+  - "dropout rate" → MISS: top 0.31, correct chunk (30, §5.4 Regularization, P_drop=0.1)
+    didn't rank. Cause: vocabulary mismatch — casual question wording vs formal paper
+    wording ("P_drop"). This is the core RAG retrieval problem; Phase 8 upgrades
+    (reranking, hybrid search, query rewriting) target exactly this.
+  - Probe queries: unrelated query scored ~0.27 with garbage results → empirical
+    threshold: below ~0.35, system should say "not found" instead of answering.
+  - Figure pages (13–15) extract as one-word-per-line junk chunks → extraction quality
+    caps retrieval quality; candidate for filtering.
+- **Cleanup:** removed leftover debug prints from chunker (they also silently skipped
+  single-chunk pages — misleading output).
 
 ## 6. Changelog
 
@@ -314,6 +346,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 1: venv, deps, PDF loading stage of hand-built RAG |
 | 2026-07 | — | feat | Phase 1: overlapping chunker with page metadata |
 | 2026-07 | — | refactor | Phase 1: pipeline split into per-stage modules |
+| 2026-07 | — | feat | Phase 1: embeddings + search working; retrieval miss analyzed |
 
 ---
 
