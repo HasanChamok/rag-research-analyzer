@@ -336,6 +336,34 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Cleanup:** removed leftover debug prints from chunker (they also silently skipped
   single-chunk pages — misleading output).
 
+  #### Step 1.9–1.12 — Stage 5: Generation (pipeline complete)
+- **What:** generator.py — Gemini free tier (gemini-2.5-flash) turns top-k chunks into a
+  cited answer. Prompt rules: cite pages, refuse if absent from context, no outside knowledge.
+- **Secrets:** key in .env (gitignored, verified with git check-ignore); .env.example
+  committed as the template — standard team-onboarding pattern.
+- **Safety gate:** answers refused when top retrieval score < 0.35 (threshold from our own
+  Step 1.8 measurements) — garbage never reaches the LLM.
+- **k=5 for generation** (vs 3 for search inspection): wider net partially compensates
+  for known retrieval misses like the dropout query.
+- **PHASE 1 COMPLETE:** load → chunk → embed → search → generate, all hand-built.
+
+- **Incident 5 (security — key leak):** Real API key pasted into an external chat while
+  debugging. Response: immediate rotation (delete + recreate in AI Studio). Rule adopted:
+  any key that leaves .env by any channel is compromised — rotate without debate. Also
+  standardized .env format: no spaces around `=` (portable across shell/Docker/Render).
+- **Incident 6 (TypeError):** `genai.client(...)` — lowercase = module, not callable.
+  Fix: `genai.Client`. Convention: classes are CapWords; "'module' object is not callable"
+  usually means a class-name capitalization typo.
+
+  - **Incident 7 (model retirement):** 404 — gemini-2.5-flash "no longer available to new
+  users." Nothing wrong with our code: providers sunset models on their own schedule.
+  Fix: switched to gemini-3-flash-preview (current free-tier default, 10 RPM / 1,500 RPD)
+  AND moved the model name into .env (GEMINI_MODEL) with a code-side fallback default.
+  Principle adopted: model names are configuration, not code — future retirements become
+  a one-line .env edit instead of a code change. (Twelve-factor config.)
+- **Gate validation:** "dropout rate" query was refused at score 0.31 < 0.35 before any
+  API spend — the safety gate works; the query stays as our standing Phase 8 test case.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -347,6 +375,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 1: overlapping chunker with page metadata |
 | 2026-07 | — | refactor | Phase 1: pipeline split into per-stage modules |
 | 2026-07 | — | feat | Phase 1: embeddings + search working; retrieval miss analyzed |
+| 2026-07 | — | feat | Phase 1 complete: end-to-end RAG with cited answers |
 
 ---
 

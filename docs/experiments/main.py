@@ -3,6 +3,7 @@ from loader import load_pdf
 from chunker import chunk_pages
 from embedder import load_model, embed_texts
 from search import search
+from generator import load_client, generate_answer
 
 if __name__ == "__main__":
     pages = load_pdf("data/attention.pdf")
@@ -34,3 +35,14 @@ if __name__ == "__main__":
         for r in results:
             print(f"Score: {r['score']:.4f}, Page: {r['page']}, Chunk ID: {r['id']}")
             print(f"Text snippet: {r['text'][:100]}...\n")
+            
+    client = load_client()
+    for question in [
+        "What dropout rate was used?",
+        "How many attention heads does the model have?",
+        "What is the price of Bitcoin?",
+    ]:
+        q_vec = embed_texts([question], model)[0]
+        results = search(q_vec, vectors, chunks, k=5)
+        print(f"\n=== {question}")
+        print(generate_answer(client, question, results))
