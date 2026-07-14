@@ -270,6 +270,40 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   to `data/`. Debugging tool learned: `git check-ignore -v <path>` shows exactly which
   rule (file + line) matches a path, or nothing if no rule does.
 
+
+  #### Step 1.5 — Stage 2: Chunking
+- **What:** `chunk_pages()` — fixed-size chunks (default 1000 chars) with 200-char overlap,
+  cut at word boundaries, each chunk carrying `{id, page, text}`.
+- **Why size ~1000:** small chunks → precise vectors (one topic per vector); large chunks →
+  enough context for the LLM to use. 500–1500 chars is the prose sweet spot; verified by
+  experiment with 300 (incoherent fragments) and 3000 (multi-topic mud).
+- **Why overlap:** sentences on a cut boundary would be split into two meaningless halves;
+  overlap guarantees every sentence exists whole in ≥1 chunk.
+- **Known flaws (accepted for now, Phase 8 fixes):** structure-blind (cuts mid-paragraph /
+  mid-formula); tiny leftover chunks at page tails; no overlap across page boundaries
+  (traded for simple page citations).
+
+#### Step 1.6 — Chunk quality inspection
+- **What:** manually inspected chunk output: verified overlap between consecutive chunks,
+  found tiny leftover chunks at page tails, found structure-blind cuts (mid-sentence).
+- **Experiment:** reran with chunk_size=300 (incoherent fragments) and 3000 (multi-topic
+  chunks) → validated ~1000 as the sweet spot empirically.
+- **Also here:** infinite-loop incident + fix (see Incident 3), and the code walkthrough
+  of the chunker.
+  
+#### Step 1.7 — Refactor: one module per stage
+- **What:** split rag_by_hand.py into loader.py / chunker.py / embedder.py / search.py /
+  main.py (pipeline conductor).
+- **Why:** separation of concerns — each stage upgradeable in isolation. embedder takes
+  plain strings (doesn't know chunks exist); search takes pre-embedded vectors (doesn't
+  know the model exists). Low coupling = high reusability.
+- **Gotcha learned:** sibling-file imports resolve from the running directory → run
+  `python main.py` from inside docs/experiments/; PDF path adjusted to ../../data/.
+#### Step 1.8 — Stage 3+4: embeddings and similarity search
+- (unchanged from plan: MiniLM 384-dim vectors, cosine = normalized dot product,
+  scores ~0.5–0.8 = good hit, unrelated query → collapsed scores)
+
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -278,6 +312,8 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | fix | Correct typo in pyproject.toml dependencies field |
 | 2026-07 | — | docs | Add project documentation (this file) |
 | 2026-07 | — | feat | Phase 1: venv, deps, PDF loading stage of hand-built RAG |
+| 2026-07 | — | feat | Phase 1: overlapping chunker with page metadata |
+| 2026-07 | — | refactor | Phase 1: pipeline split into per-stage modules |
 
 ---
 
