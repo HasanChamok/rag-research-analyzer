@@ -6,6 +6,12 @@ They are used to define the structure of the data and how it is stored in the da
 from dataclasses import dataclass, field
 import numpy as np
 
+
+@dataclass
+class Page:
+    number: int
+    text: str
+   
 @dataclass
 class Document:
     """A document is a piece of text that can be used as a source of information for the RAG model.
@@ -15,7 +21,8 @@ class Document:
     title: str
     source_path: str
     metadata: dict = field(default_factory=dict)
-    
+    pages: list[Page] = field(default_factory=list)
+     
 @dataclass
 class Chunk:
     """A slice of document, small enough to be processed by the RAG model. It can be a sentence, a paragraph, 

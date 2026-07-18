@@ -383,6 +383,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   running). Pattern reinforced: when a tool misbehaves, use its introspection mode
   (git check-ignore, traceback bottom line, --collect-only) instead of re-running and hoping.
 
+  #### Step 2.4–2.6 — Loader class + first ABC
+- **Design decision:** loading and chunking are separate responsibilities (SRP) — enables
+  independent swapping in Phase 8. Added Page dataclass; Document carries pages.
+- **BaseLoader ABC:** the enforced job description — inheritors missing load() cannot even
+  be instantiated. Dataclasses protect data shape; ABCs protect behavior shape.
+- **PDFLoader:** Phase 1 load_pdf wrapped in the contract; pathlib for cross-OS paths;
+  fail-fast FileNotFoundError. Known tradeoff: id = filename stem (collision risk,
+  revisit with DB in Phase 3).
+- **Tests:** pytest.raises for error paths; two tests assert the ABC enforcement itself —
+  tests can protect architecture, not just logic. 6 passing total.
+
 
 ## 6. Changelog
 
@@ -396,7 +407,8 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | refactor | Phase 1: pipeline split into per-stage modules |
 | 2026-07 | — | feat | Phase 1: embeddings + search working; retrieval miss analyzed |
 | 2026-07 | — | feat | Phase 1 complete: end-to-end RAG with cited answers |
-
+| 2026-07 | — | feat | Phase 2: ragcore data models + first pytest suite |
+| 2026-07 | — | feat | Phase 2: BaseLoader ABC + PDFLoader |
 ---
 
 ## 7. Glossary (grows as we go)
