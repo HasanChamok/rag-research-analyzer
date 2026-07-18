@@ -377,6 +377,11 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   doc_id on Chunk (multi-paper readiness); Citation as a first-class type for the API.
 - **Testing principle adopted:** tests are decisions frozen as executable proof.
 
+- **Incident 8 (pytest collected 0 items):** File and names were correct; cause was an
+  unsaved editor buffer — pytest reads the DISK, the editor holds the truth in memory
+  until Ctrl+S. Diagnosed with `pytest --collect-only -q` (show what would run without
+  running). Pattern reinforced: when a tool misbehaves, use its introspection mode
+  (git check-ignore, traceback bottom line, --collect-only) instead of re-running and hoping.
 
 
 ## 6. Changelog
