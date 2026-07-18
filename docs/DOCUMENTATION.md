@@ -364,6 +364,21 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Gate validation:** "dropout rate" query was refused at score 0.31 < 0.35 before any
   API spend — the safety gate works; the query stays as our standing Phase 8 test case.
 
+### Phase 2 — ragcore package
+
+#### Step 2.1–2.3 — Data models + first tests
+- **What:** models.py — Document, Chunk, Citation, Answer dataclasses; installed package
+  editable (`pip install -e`); pytest with 3 passing tests.
+- **Why dataclasses over dicts:** contract enforcement (typos explode at creation site,
+  not later as KeyError), editor discoverability, type-checkability.
+- **Key patterns:** field(default_factory=...) for mutable defaults (shared-dict trap —
+  covered by a dedicated test); `| None` for lifecycle-optional fields (embedding);
+  @property is_refusal — computed, can't drift; str IDs (int counters break at 2 papers);
+  doc_id on Chunk (multi-paper readiness); Citation as a first-class type for the API.
+- **Testing principle adopted:** tests are decisions frozen as executable proof.
+
+
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
