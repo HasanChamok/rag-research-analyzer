@@ -394,6 +394,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Tests:** pytest.raises for error paths; two tests assert the ABC enforcement itself —
   tests can protect architecture, not just logic. 6 passing total.
 
+  #### Step 2.7–2.9 — Chunker class
+- **Pattern:** config in __init__ (decided once), work in chunk() (done per document);
+  construction-time validation — overlap >= chunk_size would recreate the infinite loop,
+  now an instant ValueError instead.
+- **Types:** Document in, list[Chunk] out; string IDs "{doc}:p{page}:c{n}" — unique across
+  papers, readable in logs.
+- **min_chunk_size=50:** Phase 1's min=2 junk chunks eliminated, pinned by a test.
+- **First fixture:** tiny fake Document ("word " * 500) — tests need the smallest world
+  that proves the logic; suite stays sub-second so it always gets run.
+- **Ported the cursor loop myself** from the Phase 1 mental model (rebuild muscle).
+
 
 ## 6. Changelog
 
@@ -409,6 +420,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 1 complete: end-to-end RAG with cited answers |
 | 2026-07 | — | feat | Phase 2: ragcore data models + first pytest suite |
 | 2026-07 | — | feat | Phase 2: BaseLoader ABC + PDFLoader |
+| 2026-07 | — | feat | Phase 2: FixedSizeChunker + fixture-based tests |
 ---
 
 ## 7. Glossary (grows as we go)
