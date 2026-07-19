@@ -52,3 +52,8 @@ class Answer:
     @property
     def is_refusal(self) -> bool:
         return len(self.citations) == 0
+    
+@dataclass
+class SearchResult:
+    chunk: Chunk
+    score: float

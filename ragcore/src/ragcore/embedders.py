@@ -33,7 +33,7 @@ class LocalEmbedder(BaseEmbedder):
 
     @property
     def dim(self) -> int:
-        return self._model.get_sentence_embedding_dimension()
+        return self._model.get_embedding_dimension()
 
     def embed(self, texts: list[str]) -> np.ndarray:
         return np.array(self._model.encode(texts, show_progress_bar=False))

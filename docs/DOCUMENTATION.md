@@ -417,6 +417,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   integration tests with real model (run deliberately). LocalEmbedder sanity-checked
   manually: dim=384, shape (1, 384).
 
+#### Step 2.12–2.14 — VectorStore
+- **Contract:** add(chunks) / search(query_vec, k) — the universal vector-DB interface;
+  SupabaseStore will fulfill the same one in Phase 3.
+- **SearchResult model added** (chunk+score); kept separate from Citation (engine concept
+  vs presentation concept — they evolve differently).
+- **Guards:** unembedded chunks and dimension mismatches rejected at add-time with
+  cause-suggesting messages (the dim property's payoff); empty-store search returns [].
+- **Incremental adds** via lazy matrix + vstack — multi-paper ingestion works.
+- **Test tricks:** pytest.approx for floats; raises(match=...) pins error messages;
+  fake determinism proves the full search path (identical text → score 1.0) in ms.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -433,6 +444,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: BaseLoader ABC + PDFLoader |
 | 2026-07 | — | feat | Phase 2: FixedSizeChunker + fixture-based tests |
 | 2026-07 | — | feat | Phase 2: embedders with FakeEmbedder test double |
+| 2026-07 | — | feat | Phase 2: InMemoryStore with guards |
 ---
 
 ## 7. Glossary (grows as we go)
