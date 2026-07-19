@@ -405,6 +405,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   that proves the logic; suite stays sub-second so it always gets run.
 - **Ported the cursor loop myself** from the Phase 1 mental model (rebuild muscle).
 
+#### Step 2.10–2.11 — Embedder + first test double
+- **BaseEmbedder contract:** embed() AND dim (abstract property) — dimensionality is part
+  of the contract because stores must know it and dimension mismatch is vector-search's
+  silent killer.
+- **FakeEmbedder:** deterministic via hash-seeded RNG (same text → same vector, no ML,
+  no 90MB). Fakes fulfill the same ABC, so consumers can't tell — this is what contracts
+  buy in testing. Suite stays ~1s.
+- **Lazy import** of sentence-transformers inside LocalEmbedder.__init__ — only payers pay.
+- **Two-tier testing adopted:** fast unit tests with fakes (always run) + few marked
+  integration tests with real model (run deliberately). LocalEmbedder sanity-checked
+  manually: dim=384, shape (1, 384).
 
 ## 6. Changelog
 
@@ -421,6 +432,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: ragcore data models + first pytest suite |
 | 2026-07 | — | feat | Phase 2: BaseLoader ABC + PDFLoader |
 | 2026-07 | — | feat | Phase 2: FixedSizeChunker + fixture-based tests |
+| 2026-07 | — | feat | Phase 2: embedders with FakeEmbedder test double |
 ---
 
 ## 7. Glossary (grows as we go)
