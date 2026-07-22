@@ -466,6 +466,11 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Clean-room verification:** fresh venv in temp dir installed the PINNED TAG from GitHub
   and imported successfully → reuse goal objectively achieved.
 
+- **Incident 9 (install syntax):** Clean-room install failed — `#subdirectory=ragcore[local]`
+  made pip look for a folder named "ragcore[local]". Extras belong to the package name in
+  PEP 508 direct-reference form: `pip install "ragcore[local] @ git+https://...#subdirectory=ragcore"`.
+  Tag itself resolved fine (push --tags had worked). Lesson: README install commands are
+  code; only a clean-room run proves them. (CI-testable later.)
 ## 6. Changelog
 
 | Date | Commit | Type | Description |

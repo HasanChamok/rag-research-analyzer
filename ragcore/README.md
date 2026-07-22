@@ -4,9 +4,14 @@ A reusable RAG (Retrieval-Augmented Generation) engine for document analysis.
 Ingest PDFs, ask questions, get answers grounded in the source with page citations.
 
 ## Install
+## Install
 
 ```bash
+# core
 pip install "git+https://github.com/HasanChamok/rag-research-analyzer.git#subdirectory=ragcore"
+
+# with local embeddings (pulls PyTorch, ~2GB)
+pip install "ragcore[local] @ git+https://github.com/HasanChamok/rag-research-analyzer.git#subdirectory=ragcore"
 ```
 
 ## Quick start
