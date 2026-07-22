@@ -454,6 +454,17 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Behavioral test via spy:** asserts the LLM was NOT called on refusal (last_prompt is
   None) — pins the money-saving short-circuit that return values can't reveal.
 - **Usage compressed** from ~50 lines of Phase 1 wiring to 3 lines.
+#### Step 2.22–2.26 — Packaging and release (PHASE 2 COMPLETE)
+- **__init__.py public API + __all__:** users import from `ragcore` directly; internal
+  file layout stays refactorable. Everything exposed is a promise — small surface, few promises.
+- **Semantic versioning:** 0.1.0; MAJOR breaks, MINOR adds, PATCH fixes; 0.x = API may shift.
+- **ragcore/README.md:** install, quick start, architecture table, config table, and an
+  explicit Known Limitations section (credibility + Phase 8 backlog).
+- **Optional dependencies:** [local] extra for sentence-transformers (~2GB torch) — the
+  lazy import from Session 4 is what makes this possible.
+- **Git tag ragcore-v0.1.0** (remember: `git push --tags`, tags don't auto-push).
+- **Clean-room verification:** fresh venv in temp dir installed the PINNED TAG from GitHub
+  and imported successfully → reuse goal objectively achieved.
 
 ## 6. Changelog
 
@@ -474,6 +485,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: InMemoryStore with guards |
 | 2026-07 | — | feat | Phase 2: LLM wrapper + tested prompt builder |
 | 2026-07 | — | feat | Phase 2: RAGPipeline assembled, end-to-end tests green |
+| 2026-07 | — | docs | ragcore v0.1.0 released and verified from clean install |
 ---
 
 ## 7. Glossary (grows as we go)
