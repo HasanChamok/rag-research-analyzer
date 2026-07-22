@@ -428,6 +428,19 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Test tricks:** pytest.approx for floats; raises(match=...) pins error messages;
   fake determinism proves the full search path (identical text → score 1.0) in ms.
 
+  #### Step 2.15–2.17 — LLM wrapper + prompts
+- **Design decision:** LLM classes ONLY do prompt→text. Prompt construction lives in
+  prompts.py so all implementations share one set of grounding rules. Test used:
+  "what would be duplicated by a second implementation?" — that belongs elsewhere.
+- **GeminiLLM:** explicit api_key/model args with env fallback — library code shouldn't
+  force a config mechanism; carries Incident 7's config-not-code lesson.
+- **EchoLLM (spy double):** records last_prompt so tests can assert what we ASKED,
+  with no network or quota.
+- **Prompt upgrade:** context headers now include doc_id AND page — required for
+  multi-paper comparison later; unretrofittable if deferred.
+- **Prompts are code:** tests pin the grounding rules ("ONLY", refusal string) so a
+  careless edit that would silently enable hallucination fails the suite.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -445,6 +458,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: FixedSizeChunker + fixture-based tests |
 | 2026-07 | — | feat | Phase 2: embedders with FakeEmbedder test double |
 | 2026-07 | — | feat | Phase 2: InMemoryStore with guards |
+| 2026-07 | — | feat | Phase 2: LLM wrapper + tested prompt builder |
 ---
 
 ## 7. Glossary (grows as we go)
