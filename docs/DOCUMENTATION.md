@@ -454,6 +454,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Behavioral test via spy:** asserts the LLM was NOT called on refusal (last_prompt is
   None) — pins the money-saving short-circuit that return values can't reveal.
 - **Usage compressed** from ~50 lines of Phase 1 wiring to 3 lines.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -472,6 +473,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: embedders with FakeEmbedder test double |
 | 2026-07 | — | feat | Phase 2: InMemoryStore with guards |
 | 2026-07 | — | feat | Phase 2: LLM wrapper + tested prompt builder |
+| 2026-07 | — | feat | Phase 2: RAGPipeline assembled, end-to-end tests green |
 ---
 
 ## 7. Glossary (grows as we go)
