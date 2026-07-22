@@ -441,6 +441,19 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Prompts are code:** tests pin the grounding rules ("ONLY", refusal string) so a
   careless edit that would silently enable hallucination fails the suite.
 
+
+#### Step 2.18–2.21 — RAGPipeline (Phase 2 core complete)
+- **Dependency injection:** components are passed in, never constructed inside. Enables
+  fake-based testing, Phase 3 store swap with zero pipeline changes, explicit wiring.
+  Type hints declare ABCs (BaseLoader etc.), not concrete classes.
+- **ask() reads as a five-line story:** embed → search → gate → generate → package.
+  Complexity lives behind contracts.
+- **default_pipeline() factory:** derives store dim from embedder.dim — good defaults
+  PREVENT the mistake the store's guard merely CATCHES.
+- **End-to-end test with all fakes:** full system verified in ~1s, no PDF/model/network.
+- **Behavioral test via spy:** asserts the LLM was NOT called on refusal (last_prompt is
+  None) — pins the money-saving short-circuit that return values can't reveal.
+- **Usage compressed** from ~50 lines of Phase 1 wiring to 3 lines.
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
