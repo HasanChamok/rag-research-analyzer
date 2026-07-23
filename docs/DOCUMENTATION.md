@@ -510,6 +510,19 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Persistence verified:** re-ran with ingest disabled, answers still worked.
 - Released as ragcore v0.2.0 (MINOR: added capability, nothing broken).
 
+#### Step 3.9–3.10 — Store contract completion + integration testing (PHASE 3 COMPLETE)
+- **Contract extended** with list_documents/delete_document; both implementations were
+  forced to comply — ABCs enforce changes across every implementation at instantiation.
+- **Cascade contrast:** Supabase delete removes one row and chunks vanish via
+  ON DELETE CASCADE; InMemoryStore must filter chunk list and vector matrix by identical
+  indices or they desynchronize. Concrete argument for what a DB gives you.
+- **Integration tests:** marked with pytest markers so the fast suite runs with
+  `-m "not integration"`; skipif when credentials absent (needed for CI on forks/PRs);
+  try/finally cleanup so failures never leave junk rows.
+- **Differential validation:** cloud pgvector returned score 0.55 p.5 — identical to the
+  Phase 1 numpy result. Two independent cosine implementations agreeing is strong evidence
+  both are correct; the 0.35 threshold and score calibration transfer unchanged.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |

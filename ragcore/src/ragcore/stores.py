@@ -21,6 +21,16 @@ class BaseVectorStore(ABC):
     def search(self, query_vec: np.ndarray, k: int = 5) -> list[SearchResult]:
         """Return the k most similar chunks, best first."""
         ...
+        
+    @abstractmethod
+    def list_documents(self) -> list[str]:
+        """Return the doc_ids currently stored."""
+        ...
+
+    @abstractmethod
+    def delete_document(self, doc_id: str) -> None:
+        """Remove a document and all its chunks."""
+        ...
 
 
 class InMemoryStore(BaseVectorStore):
@@ -54,6 +64,14 @@ class InMemoryStore(BaseVectorStore):
         scores = v @ q
         top = np.argsort(scores)[::-1][:k]
         return [SearchResult(chunk=self._chunks[i], score=float(scores[i])) for i in top]
+    
+    def list_documents(self) -> list[str]:
+        return sorted({c.doc_id for c in self._chunks})
+
+    def delete_document(self, doc_id: str) -> None:
+        keep = [i for i, c in enumerate(self._chunks) if c.doc_id != doc_id]
+        self._chunks = [self._chunks[i] for i in keep]
+        self._vectors = self._vectors[keep] if keep and self._vectors is not None else None
     
     
 class SupabaseStore(BaseVectorStore):
@@ -117,3 +135,10 @@ class SupabaseStore(BaseVectorStore):
             )
             for row in response.data
         ]
+        
+    def list_documents(self) -> list[str]:
+        response = self._client.table("documents").select("id").execute()
+        return sorted(row["id"] for row in response.data)
+
+    def delete_document(self, doc_id: str) -> None:
+        self._client.table("documents").delete().eq("id", doc_id).execute()
