@@ -494,6 +494,22 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Secrets:** SUPABASE_KEY (service_role) is more dangerous than the LLM key — full DB
   access. Known gap: no Row Level Security yet (acceptable for single-user backend).
 
+  #### Step 3.6–3.8 — SupabaseStore (architecture validated)
+- **Same contract, different world:** SupabaseStore fulfills BaseVectorStore; similarity
+  math runs server-side via the match_chunks RPC over potentially millions of rows, vs
+  InMemoryStore's local numpy over RAM. RAGPipeline changed by ZERO characters and all 28
+  tests stayed green — the ABC investment from Phase 2, cashed in.
+- **upsert not insert:** makes ingestion idempotent; re-ingesting a paper is safe. Critical
+  property for anything that retries over a network.
+- **Insert order matters:** documents before chunks, enforced by the foreign key —
+  referential integrity forces correct code rather than trusting the developer.
+- **.tolist() bridges numpy→JSON;** search deliberately does NOT fetch embeddings back
+  (unneeded bandwidth) — retrieved chunks need text + citation metadata only.
+- **Known duplication:** dim/embedding guards copied from InMemoryStore. Acceptable at two
+  implementations; extract to a shared base method at three.
+- **Persistence verified:** re-ran with ingest disabled, answers still worked.
+- Released as ragcore v0.2.0 (MINOR: added capability, nothing broken).
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -515,6 +531,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: RAGPipeline assembled, end-to-end tests green |
 | 2026-07 | — | docs | ragcore v0.1.0 released and verified from clean install |
 | 2026-07 | — | feat | Phase 3: Supabase project, pgvector schema, search function |
+| 2026-07 | — | feat | Phase 3: SupabaseStore, pgvector persistence, v0.2.0 |
 ---
 
 ## 7. Glossary (grows as we go)

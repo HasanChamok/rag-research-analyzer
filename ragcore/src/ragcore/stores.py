@@ -54,3 +54,66 @@ class InMemoryStore(BaseVectorStore):
         scores = v @ q
         top = np.argsort(scores)[::-1][:k]
         return [SearchResult(chunk=self._chunks[i], score=float(scores[i])) for i in top]
+    
+    
+class SupabaseStore(BaseVectorStore):
+    """Postgres + pgvector store. Persists across restarts."""
+
+    def __init__(self, dim: int, url: str | None = None, key: str | None = None):
+        import os
+        from supabase import create_client
+
+        url = url or os.getenv("SUPABASE_URL")
+        key = key or os.getenv("SUPABASE_KEY")
+        if not url or not key:
+            raise ValueError(
+                "Supabase credentials missing. Set SUPABASE_URL and SUPABASE_KEY "
+                "(copy .env.example to .env)."
+            )
+        self._dim = dim
+        self._client = create_client(url, key)
+
+    def add(self, chunks: list[Chunk]) -> None:
+        if not chunks:
+            return
+
+        rows = []
+        for c in chunks:
+            if c.embedding is None:
+                raise ValueError(f"Chunk {c.id} has no embedding — embed before adding.")
+            if c.embedding.shape != (self._dim,):
+                raise ValueError(
+                    f"Chunk {c.id}: embedding dim {c.embedding.shape} != store dim ({self._dim},)."
+                )
+            rows.append({
+                "id": c.id,
+                "doc_id": c.doc_id,
+                "text": c.text,
+                "page": c.page,
+                "embedding": c.embedding.tolist(),
+            })
+
+        # Parent row must exist first (foreign key constraint)
+        doc_ids = {c.doc_id for c in chunks}
+        self._client.table("documents").upsert(
+            [{"id": d, "title": d} for d in doc_ids]
+        ).execute()
+
+        self._client.table("chunks").upsert(rows).execute()
+
+    def search(self, query_vec: np.ndarray, k: int = 5) -> list[SearchResult]:
+        response = self._client.rpc(
+            "match_chunks",
+            {"query_embedding": query_vec.tolist(), "match_count": k},
+        ).execute()
+
+        return [
+            SearchResult(
+                chunk=Chunk(
+                    id=row["id"], doc_id=row["doc_id"],
+                    text=row["text"], page=row["page"],
+                ),
+                score=float(row["score"]),
+            )
+            for row in response.data
+        ]

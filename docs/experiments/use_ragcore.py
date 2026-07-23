@@ -3,7 +3,7 @@ from ragcore.pipeline import default_pipeline
 
 load_dotenv()
 
-pipeline = default_pipeline()
+pipeline = default_pipeline(use_cloud=True)
 pipeline.ingest("data/attention.pdf")
 answer = pipeline.ask("How many attention heads does the model have?")
 
