@@ -471,6 +471,29 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   PEP 508 direct-reference form: `pip install "ragcore[local] @ git+https://...#subdirectory=ragcore"`.
   Tag itself resolved fine (push --tags had worked). Lesson: README install commands are
   code; only a clean-room run proves them. (CI-testable later.)
+
+
+  ### Phase 3 — Cloud persistence
+
+#### Step 3.1–3.5 — Supabase + pgvector setup
+- **Why a database:** InMemoryStore dies on restart; Phase 4's API would re-ingest every
+  PDF on every deploy. Need durable storage.
+- **Why Postgres + pgvector:** one system for documents AND vectors; similarity search is
+  native SQL, so metadata filtering is a JOIN rather than a two-system dance; standard SQL
+  means low vendor lock-in. Free tier (verified July 2026): 500MB DB, 1GB storage,
+  2 projects, no backups, PAUSES AFTER 7 DAYS INACTIVITY (relevant for portfolio demos).
+- **Schema decisions:** primary keys enforce ID uniqueness; foreign key with ON DELETE
+  CASCADE gives referential integrity (deleting a paper removes its chunks automatically);
+  vector(384) enforces the dimension invariant at the storage layer — now guarded in three
+  places (embedder.dim, store guard, DB column).
+- **HNSW index:** approximate nearest neighbour graph; without it, search scans every row.
+  Approximation-for-speed is the core tradeoff of the whole vector DB category.
+- **match_chunks SQL function:** our search() reimplemented server-side; `<=>` is cosine
+  distance, so `1 - distance` = our familiar 0–1 similarity, threshold 0.35 transfers.
+- **Grants required** for projects created after 2026-05-30 (PostgREST access change).
+- **Secrets:** SUPABASE_KEY (service_role) is more dangerous than the LLM key — full DB
+  access. Known gap: no Row Level Security yet (acceptable for single-user backend).
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -491,6 +514,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 2: LLM wrapper + tested prompt builder |
 | 2026-07 | — | feat | Phase 2: RAGPipeline assembled, end-to-end tests green |
 | 2026-07 | — | docs | ragcore v0.1.0 released and verified from clean install |
+| 2026-07 | — | feat | Phase 3: Supabase project, pgvector schema, search function |
 ---
 
 ## 7. Glossary (grows as we go)
