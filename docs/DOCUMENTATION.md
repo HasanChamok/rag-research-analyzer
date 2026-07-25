@@ -594,6 +594,20 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   leave the backend. Layered design means the browser is structurally unable to hold secrets.
 - Ports: frontend 3000, backend 8000 (matches the CORS allow-list from Phase 4).
 
+#### Step 5.5–5.7 — Frontend UI
+- **lib/api.ts:** all backend calls in one module; TypeScript interfaces mirror the
+  backend's Pydantic response models — the network contract, typed on both sides, so drift
+  is caught at compile time. Throws on non-ok status → UI shows errors, never fails silently.
+- **page.tsx:** React component, "use client" for interactivity. State (useState) drives
+  the UI; handlers call the API and store results in state; finally-blocks always clear
+  loading flags. Upload handler POLLS the paper list because backend ingestion is async
+  (202) — the frontend half of Phase 4's background-task design.
+- **UX states handled:** loading spinners, error box, empty state — the details that make
+  it feel finished.
+- **Verified end-to-end:** browser → frontend → backend → ragcore → Supabase + Gemini →
+  screen. Upload, cited answer, and Bitcoin refusal all working.
+
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -619,6 +633,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 4: FastAPI backend, upload + list endpoints |
 | 2026-07 | — | feat | Phase 4: /ask endpoint, background ingestion, 5 API tests |
 | 2026-07 | — | chore | Phase 5: Next.js frontend scaffolded |
+| 2026-07 | — | feat | Phase 5: working frontend UI, full stack end-to-end |
 ---
 
 ## 7. Glossary (grows as we go)
