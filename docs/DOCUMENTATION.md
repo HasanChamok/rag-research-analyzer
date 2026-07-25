@@ -580,6 +580,20 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 - **Deliverables:** 5 endpoints, thin translation layer over ragcore, async ingestion,
   Pydantic validation, 5 in-process API tests. Total project tests now 34.
 
+  ### Phase 5 — Next.js frontend
+
+#### Step 5.1–5.4 — Scaffold and configuration
+- **Stack:** Next.js 16 (App Router), React, TypeScript, Tailwind CSS — verified current
+  July 2026. Scaffolded with create-next-app into frontend/ (monorepo's third project).
+- **App Router = filesystem routing:** app/page.tsx is `/`, folders become routes. Same
+  map-function-to-path idea as FastAPI, via folders.
+- **Frontend's role:** thinnest layer; runs in the untrusted browser; talks ONLY to our
+  backend over HTTP; never touches Supabase/Gemini; holds no secrets.
+- **NEXT_PUBLIC_ prefix:** only so-prefixed env vars reach the browser — a deliberate
+  guard. NEXT_PUBLIC_API_URL is safe to expose; secrets never get the prefix and never
+  leave the backend. Layered design means the browser is structurally unable to hold secrets.
+- Ports: frontend 3000, backend 8000 (matches the CORS allow-list from Phase 4).
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -604,6 +618,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 3: SupabaseStore, pgvector persistence, v0.2.0 |
 | 2026-07 | — | feat | Phase 4: FastAPI backend, upload + list endpoints |
 | 2026-07 | — | feat | Phase 4: /ask endpoint, background ingestion, 5 API tests |
+| 2026-07 | — | chore | Phase 5: Next.js frontend scaffolded |
 ---
 
 ## 7. Glossary (grows as we go)
