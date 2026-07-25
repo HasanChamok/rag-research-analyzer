@@ -544,11 +544,41 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   Background tasks next session.
 - **/docs** interactive documentation generated entirely from type hints.
 
-- **Test-isolation bug caught:** test_ask_returns_answer initially failed with a refusal —
+#### Step 4.7–4.9 — /ask endpoint, background ingestion, API tests
+- **/ask is a thin translation layer:** all RAG logic stays in ragcore; endpoint only
+  maps HTTP↔ragcore and Answer→AnswerOut (DTO boundary drops internal chunk_id). Thinness
+  keeps logic testable and reusable outside HTTP.
+- **BackgroundTasks for ingestion:** upload returns 202 Accepted immediately, heavy work
+  runs after the response; frontend polls GET /papers. Status codes: 201=created,
+  202=accepted-processing. Known limitation: in-process, not durable — lost on restart,
+  no retry. Scale answer = durable job queue (Celery + Redis).
+- **TestClient + dependency_overrides:** entire API tested in-process with a fake pipeline
+  (FakeEmbedder + EchoLLM + InMemoryStore) — no network/model/keys, <1s. Same swappability
+  as ragcore, now at the web layer.
+- **Validation tests:** 422 on short question and oversized top_k — proves the Pydantic
+  guardrails are real.
+
+- **Test import fix:** pytest doesn't add the working dir to sys.path like uvicorn does;
+  added `[tool.pytest.ini_options] pythonpath = ["."]` in backend/pyproject.toml so
+  `import app` resolves. Lesson: installed packages (ragcore) import from anywhere; local
+  source folders (app) only when on the path.
+
+  **Test-isolation bug caught:** test_ask_returns_answer initially failed with a refusal —
   the fixture built an empty InMemoryStore but never ingested. Empty store → no results →
   gate refuses (correct behaviour). Fix: call pipeline.ingest() in the fixture, mirroring
   real usage (must ingest before asking). Lesson: the gate refusing an empty store is the
   system working, not failing.
+
+  #### Step 4.10–4.12 — Backend finalized (PHASE 4 COMPLETE)
+- **run_tests.ps1:** runs both suites; propagates failure via exit code (0=pass, non-zero
+  =fail) so CI can block on it. Same signal-vs-output idea as HTTP status codes. Note:
+  Windows-only convenience; Phase 7 CI (Linux) calls pytest directly.
+- **backend/README.md:** run instructions + required env vars + endpoint table — makes the
+  service reproducible by someone who isn't the author.
+- **End-to-end verification:** all endpoints exercised against LIVE Supabase + Gemini via
+  /docs — upload (202), list, ask (cited), Bitcoin (refused).
+- **Deliverables:** 5 endpoints, thin translation layer over ragcore, async ingestion,
+  Pydantic validation, 5 in-process API tests. Total project tests now 34.
 
 ## 6. Changelog
 
@@ -573,6 +603,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 3: Supabase project, pgvector schema, search function |
 | 2026-07 | — | feat | Phase 3: SupabaseStore, pgvector persistence, v0.2.0 |
 | 2026-07 | — | feat | Phase 4: FastAPI backend, upload + list endpoints |
+| 2026-07 | — | feat | Phase 4: /ask endpoint, background ingestion, 5 API tests |
 ---
 
 ## 7. Glossary (grows as we go)
