@@ -523,6 +523,27 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   Phase 1 numpy result. Two independent cosine implementations agreeing is strong evidence
   both are correct; the 0.35 threshold and score calibration transfer unchanged.
 
+### Phase 4 — FastAPI backend
+
+#### Step 4.1–4.6 — API foundation
+- **Structure:** backend/app with routers, schemas, deps; depends on ragcore by PINNED
+  GitHub tag (v0.2.0) — the reuse goal running in production, not as a demo.
+- **Pydantic schemas as DTOs:** separate from ragcore models so engine internals and API
+  contract evolve independently. Validation from type hints (min_length, ge/le caps
+  top_k — prevents quota exhaustion via huge k).
+- **get_pipeline with @lru_cache(maxsize=1):** the 90MB embedding model loads ONCE per
+  process, not per request. FastAPI's DI = same pattern as RAGPipeline's, at the web layer;
+  overridable in tests.
+- **Upload guards:** .pdf extension + 20MB cap + tempfile.TemporaryDirectory (self-cleaning,
+  even on error). Known weakness: extension check is not magic-byte verification.
+- **CORS:** browsers block cross-origin JS calls unless the server permits; frontend
+  (Vercel) and backend (Render) will be different origins. Symptom is a browser-side error
+  with a successful server log — disorienting if you don't know it.
+- **/health endpoint** for platform liveness checks and Phase 6 free-tier wake-ups.
+- **Known limitation:** ingest is synchronous and slow — blocks a worker for seconds.
+  Background tasks next session.
+- **/docs** interactive documentation generated entirely from type hints.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
@@ -545,6 +566,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | docs | ragcore v0.1.0 released and verified from clean install |
 | 2026-07 | — | feat | Phase 3: Supabase project, pgvector schema, search function |
 | 2026-07 | — | feat | Phase 3: SupabaseStore, pgvector persistence, v0.2.0 |
+| 2026-07 | — | feat | Phase 4: FastAPI backend, upload + list endpoints |
 ---
 
 ## 7. Glossary (grows as we go)
