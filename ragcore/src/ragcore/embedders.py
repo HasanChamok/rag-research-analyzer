@@ -58,3 +58,29 @@ class FakeEmbedder(BaseEmbedder):
             rng = np.random.default_rng(seed=abs(hash(text)) % (2**32))
             vectors.append(rng.random(self._dim))
         return np.array(vectors)
+    
+
+class GeminiEmbedder(BaseEmbedder):
+    """Google Gemini embedding API — no local model, minimal RAM."""
+
+    def __init__(self, model: str = "gemini-embedding-001", api_key: str | None = None):
+        import os
+        from google import genai
+
+        key = api_key or os.getenv("GOOGLE_API_KEY")
+        if not key:
+            raise ValueError("GOOGLE_API_KEY not set for GeminiEmbedder.")
+        self._client = genai.Client(api_key=key)
+        self._model = model
+        self._dim = 768   # gemini-embedding-001 default output dimension
+
+    @property
+    def dim(self) -> int:
+        return self._dim
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        result = self._client.models.embed_content(
+            model=self._model,
+            contents=texts,
+        )
+        return np.array([e.values for e in result.embeddings])

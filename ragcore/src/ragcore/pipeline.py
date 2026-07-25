@@ -66,21 +66,22 @@ class RAGPipeline:
         return Answer(text=text, citations=citations)
     
 def default_pipeline(use_cloud: bool = False, **kwargs) -> RAGPipeline:
+    import os
     from ragcore.chunkers import FixedSizeChunker
-    from ragcore.embedders import LocalEmbedder
+    from ragcore.embedders import GeminiEmbedder, LocalEmbedder
     from ragcore.llms import GeminiLLM
     from ragcore.loaders import PDFLoader
     from ragcore.stores import InMemoryStore, SupabaseStore
 
-    embedder = LocalEmbedder()
+    if os.getenv("EMBEDDER", "local") == "gemini":
+        embedder = GeminiEmbedder()
+    else:
+        embedder = LocalEmbedder()
+
     store = (SupabaseStore(dim=embedder.dim) if use_cloud
              else InMemoryStore(dim=embedder.dim))
 
     return RAGPipeline(
-        loader=PDFLoader(),
-        chunker=FixedSizeChunker(),
-        embedder=embedder,
-        store=store,
-        llm=GeminiLLM(),
-        **kwargs,
+        loader=PDFLoader(), chunker=FixedSizeChunker(),
+        embedder=embedder, store=store, llm=GeminiLLM(), **kwargs,
     )

@@ -606,7 +606,22 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   it feel finished.
 - **Verified end-to-end:** browser → frontend → backend → ragcore → Supabase + Gemini →
   screen. Upload, cited answer, and Bitcoin refusal all working.
+### Phase 6 — Deployment
 
+#### Step 6.1–6.4 — Backend to Render + embedder swap
+- **Constraint hit:** Render free tier = 512MB RAM; sentence-transformers + PyTorch don't
+  fit. Real deploy-time discovery.
+- **Fix = one new class:** GeminiEmbedder (API-based, no local model, minimal RAM) fulfills
+  BaseEmbedder; pipeline unchanged. Same architecture payoff as the SupabaseStore swap.
+- **Dimension change 384→768:** Gemini embeddings are 768-dim. Required DB migration
+  (new vector(768) column + reindex + match_chunks signature) and full re-ingest — the
+  "switch models = re-embed everything" rule, live. ragcore bumped to v0.3.0.
+- **EMBEDDER env var:** local dev uses LocalEmbedder (fast, existing), production uses
+  gemini. Config-not-code.
+- **render.yaml:** infrastructure as code; --host 0.0.0.0, $PORT from Render, sync:false
+  secrets set in dashboard. requirements.txt drops [local] extra → no PyTorch → fits 512MB
+  (Phase 2 optional-deps design paying off).
+- **Cold start:** 15-min idle → 30–60s wake on free tier. Mitigated by /health + pinger.
 
 ## 6. Changelog
 
@@ -634,6 +649,7 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
 | 2026-07 | — | feat | Phase 4: /ask endpoint, background ingestion, 5 API tests |
 | 2026-07 | — | chore | Phase 5: Next.js frontend scaffolded |
 | 2026-07 | — | feat | Phase 5: working frontend UI, full stack end-to-end |
+| 2026-07 | — | feat | Phase 6: GeminiEmbedder, backend deployed to Render |
 ---
 
 ## 7. Glossary (grows as we go)

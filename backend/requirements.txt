@@ -2,4 +2,4 @@ fastapi
 uvicorn[standard]
 python-multipart
 python-dotenv
-ragcore[local] @ git+https://github.com/HasanChamok/rag-research-analyzer.git@ragcore-v0.2.0#subdirectory=ragcore
+ragcore @ git+https://github.com/HasanChamok/rag-research-analyzer.git@ragcore-v0.3.0#subdirectory=ragcore
