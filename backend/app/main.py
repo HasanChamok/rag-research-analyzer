@@ -1,8 +1,8 @@
 """FastAPI application entrypoint."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers import chat, papers
 
-from app.routers import papers
 
 app = FastAPI(
     title="RAG Research Paper Analyzer",
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(papers.router)
+app.include_router(chat.router)
 
 
 @app.get("/health", tags=["system"])

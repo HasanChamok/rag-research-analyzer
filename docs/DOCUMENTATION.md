@@ -544,6 +544,12 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   Background tasks next session.
 - **/docs** interactive documentation generated entirely from type hints.
 
+- **Test-isolation bug caught:** test_ask_returns_answer initially failed with a refusal —
+  the fixture built an empty InMemoryStore but never ingested. Empty store → no results →
+  gate refuses (correct behaviour). Fix: call pipeline.ingest() in the fixture, mirroring
+  real usage (must ingest before asking). Lesson: the gate refusing an empty store is the
+  system working, not failing.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |

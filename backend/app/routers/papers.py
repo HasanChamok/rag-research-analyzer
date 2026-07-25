@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, BackgroundTasks
 from ragcore.pipeline import RAGPipeline
 
 from app.deps import get_pipeline
@@ -16,9 +16,10 @@ def list_papers(pipeline: RAGPipeline = Depends(get_pipeline)):
     return [PaperOut(id=doc_id) for doc_id in pipeline.store.list_documents()]
 
 
-@router.post("", response_model=PaperOut, status_code=201)
+@router.post("", status_code=202)
 async def upload_paper(
     file: UploadFile,
+    background: BackgroundTasks,
     pipeline: RAGPipeline = Depends(get_pipeline),
 ):
     if not file.filename or not file.filename.lower().endswith(".pdf"):
@@ -28,12 +29,16 @@ async def upload_paper(
     if len(contents) > 20 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="File too large (max 20MB).")
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        path = Path(tmpdir) / file.filename
-        path.write_bytes(contents)
-        document = pipeline.ingest(str(path))
+    def ingest_in_background(data: bytes, filename: str):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / filename
+            path.write_bytes(data)
+            pipeline.ingest(str(path))
 
-    return PaperOut(id=document.id, chunks=len(document.pages))
+    background.add_task(ingest_in_background, contents, file.filename)
+    return {"status": "processing", "filename": file.filename}
 
 
 @router.delete("/{doc_id}", status_code=204)
