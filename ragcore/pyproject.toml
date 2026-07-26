@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A reusable RAG engine for research paper analysis"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["numpy", "pymupdf", "google-genai", "python-dotenv"]
+dependencies = ["numpy", "pymupdf", "google-genai", "python-dotenv", "supabase"]
 
 [project.optional-dependencies]
 local = ["sentence-transformers"]
