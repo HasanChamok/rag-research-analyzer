@@ -12,7 +12,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],   # Phase 6: add the Vercel URL
+    allow_origins=[
+      "http://localhost:3000",
+      "https://rag-research-analyzer.vercel.app",  # your actual Vercel URL
+  ],   # Phase 6: add the Vercel URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -632,6 +632,20 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   = (1, 768) before shipping as v0.3.2. Lesson: never hardcode a dimension you haven't
   measured — the background-task silent-failure also confirms Phase 4's noted limitation.
 
+#### Step 6.5–6.9 — Backend fully live (deployment debugging saga)
+- Deployed to Render, then debugged five real production issues in sequence:
+  1. ModuleNotFoundError: supabase — undeclared dependency (v0.3.1)
+  2. Git divergence (web-edit vs local) + stuck Vim merge — resolved via merge commit
+  3. embedding dim (3072) != (768) — Gemini default is 3072; fixed with
+     output_dimensionality=768 (v0.3.2)
+  4. Fix present in code+tag+requirements but prod still failing — pip VCS build cache;
+     fixed with "Clear build cache & deploy"
+- Full stack verified live: /ask returns cited answer, scores 0.72–0.79 (HIGHER than
+  local MiniLM's ~0.55 — larger Gemini embeddings bridge vocabulary gaps better; the
+  RAM-forced swap improved quality).
+- Key lesson: when local and remote code are provably identical but behave differently,
+  suspect a cache.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |
