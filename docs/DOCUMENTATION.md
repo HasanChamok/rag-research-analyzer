@@ -623,6 +623,15 @@ proven end-to-end · traceback-reading and local-vs-remote lessons internalized.
   (Phase 2 optional-deps design paying off).
 - **Cold start:** 15-min idle → 30–60s wake on free tier. Mitigated by /health + pinger.
 
+- **Incident 11 (embedding dimension mismatch in prod):** upload 202'd but ingestion
+  failed silently in the background task; Render log: `ValueError: embedding dim (3072,)
+  != store dim (768,)`. Cause: gemini-embedding-001 outputs 3072 dims by default, not 768
+  (dimension was assumed, never measured). The InMemoryStore/SupabaseStore guard from
+  Phase 2 caught it cleanly — defensive design paying off. Fix: pass
+  output_dimensionality=768 to Gemini (keeps DB column/index unchanged); verified locally
+  = (1, 768) before shipping as v0.3.2. Lesson: never hardcode a dimension you haven't
+  measured — the background-task silent-failure also confirms Phase 4's noted limitation.
+
 ## 6. Changelog
 
 | Date | Commit | Type | Description |

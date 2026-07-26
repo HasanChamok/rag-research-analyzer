@@ -82,5 +82,6 @@ class GeminiEmbedder(BaseEmbedder):
         result = self._client.models.embed_content(
             model=self._model,
             contents=texts,
+            config={"output_dimensionality": self._dim},
         )
         return np.array([e.values for e in result.embeddings])
